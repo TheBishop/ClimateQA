@@ -1,4 +1,6 @@
 import os
+import streamlit as st
+GROQ_API_KEY = st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
@@ -31,9 +33,9 @@ def format_docs(docs):
 
 def build_chain():
     llm = ChatGroq(
-        model="llama-3.3-70b-versatile",
-        temperature=0.1,
-        api_key=os.getenv("GROQ_API_KEY"),
+    model="llama-3.3-70b-versatile",
+    temperature=0.1,
+    api_key=GROQ_API_KEY,
     )
     retriever = load_retriever(k=5)
     prompt = ChatPromptTemplate.from_messages([
