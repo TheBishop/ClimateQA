@@ -1,5 +1,5 @@
 import streamlit as st
-import os
+st.write("Key preview:", st.secrets.get("GROQ_API_KEY", "NOT FOUND")[:8])import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
