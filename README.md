@@ -25,7 +25,7 @@ IPCC AR6 PDFs
 
 ## Evaluation (RAGAS, n=20 questions)
 
-| Metric | Score |
+| Metric | Value |
 |--------|-------|
 | Faithfulness | 0.714 |
 | Answer Relevancy | 0.973 |
@@ -78,3 +78,14 @@ ClimateQA/
 
 
 
+
+
+## API
+
+```bash
+curl -X POST https://your-api-url/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What are projected sea level rises by 2100?"}'
+```
+
+Interactive docs available at `/docs` (Swagger UI).
