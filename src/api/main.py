@@ -23,6 +23,10 @@ class AnswerResponse(BaseModel):
     sources: list[SourceItem]
     latency_ms: float
 
+@app.get("/")
+def root():
+    return {"message": "ClimateQA API is running"}
+
 @app.get("/health")
 def health():
     return {"status": "ok", "model": "llama-3.3-70b-versatile"}
