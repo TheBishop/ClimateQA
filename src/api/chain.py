@@ -20,12 +20,18 @@ Context:
 {context}
 """
 
+# def get_api_key():
+#     try:
+#         import streamlit as st
+#         return st.secrets["GROQ_API_KEY"]
+#     except Exception:
+#         return os.getenv("GROQ_API_KEY")
+
 def get_api_key():
-    try:
-        import streamlit as st
-        return st.secrets["GROQ_API_KEY"]
-    except Exception:
-        return os.getenv("GROQ_API_KEY")
+    key = os.getenv("GROQ_API_KEY")
+    if not key:
+        raise ValueError("GROQ_API_KEY is not set")
+    return key
 
 def format_docs(docs):
     parts = []
