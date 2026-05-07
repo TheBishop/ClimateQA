@@ -5,6 +5,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from src.retrieval.retriever import load_retriever
+# from langfuse.callback import CallbackHandler
+from langfuse.langchain import CallbackHandler
+
 
 load_dotenv()
 
@@ -20,18 +23,22 @@ Context:
 {context}
 """
 
-# def get_api_key():
-#     try:
-#         import streamlit as st
-#         return st.secrets["GROQ_API_KEY"]
-#     except Exception:
-#         return os.getenv("GROQ_API_KEY")
-
 def get_api_key():
-    key = os.getenv("GROQ_API_KEY")
-    if not key:
-        raise ValueError("GROQ_API_KEY is not set")
-    return key
+    try:
+        import streamlit as st
+        return st.secrets["GROQ_API_KEY"]
+    except Exception:
+        return os.getenv("GROQ_API_KEY")
+
+def get_langfuse_handler():
+    try:
+        return CallbackHandler(
+            public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+            secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
+            host=os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com"),
+        )
+    except Exception:
+        return None
 
 def format_docs(docs):
     parts = []
@@ -63,7 +70,12 @@ def build_chain():
 def ask(question: str) -> dict:
     chain, retriever = build_chain()
     docs = retriever.invoke(question)
-    answer = chain.invoke(question)
+
+    # Langfuse observability
+    langfuse_handler = get_langfuse_handler()
+    config = {"callbacks": [langfuse_handler]} if langfuse_handler else {}
+
+    answer = chain.invoke(question, config=config)
     sources = [
         {
             "file": os.path.basename(d.metadata.get("source", "unknown")),
