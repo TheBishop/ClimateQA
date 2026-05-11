@@ -69,7 +69,7 @@ ClimateQA/
 
 ## Author
 
-**Dzahene Richmond Elorm** — Teaching & Research Assistant, Dept. of Meteorology & Climate Science, KNUST  
+**Dzahene Richmond Elorm**  
 [github.com/TheBishop](https://github.com/TheBishop)
 
 
