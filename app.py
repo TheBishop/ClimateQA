@@ -1,7 +1,12 @@
-import streamlit as st
-# st.write("Key preview:", st.secrets.get("GROQ_API_KEY", "NOT FOUND")[:8])
 import os
 import sys
+from pathlib import Path
+
+import streamlit as st
+# st.write("Key preview:", st.secrets.get("GROQ_API_KEY", "NOT FOUND")[:8])
+
+ROOT = Path(__file__).resolve().parent
+CHROMA_DIR = ROOT / "chroma_db"
 
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -20,7 +25,7 @@ st.caption("Ask questions about climate science — powered by IPCC reports & Gr
 # Sidebar: ingestion controls
 with st.sidebar:
     st.header("📂 Document Index")
-    chroma_exists = os.path.exists("chroma_db")
+    chroma_exists = CHROMA_DIR.exists()
     if chroma_exists:
         st.success("✅ Index ready")
     else:

@@ -36,7 +36,12 @@ def ask_question(request: QuestionRequest):
     if not request.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty")
     start = time.time()
-    result = ask(request.question)
+    try:
+        result = ask(request.question)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    if not isinstance(result, dict) or "answer" not in result or "sources" not in result:
+        raise HTTPException(status_code=500, detail="Unexpected backend response")
     latency_ms = round((time.time() - start) * 1000, 2)
     return AnswerResponse(
         question=request.question,

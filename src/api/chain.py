@@ -5,9 +5,6 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from src.retrieval.retriever import load_retriever
-# from langfuse.callback import CallbackHandler
-from langfuse.langchain import CallbackHandler
-
 
 load_dotenv()
 
@@ -26,19 +23,26 @@ Context:
 def get_api_key():
     try:
         import streamlit as st
-        return st.secrets["GROQ_API_KEY"]
-    except Exception:
+        return st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
+    except ImportError:
         return os.getenv("GROQ_API_KEY")
 
+
 def get_langfuse_handler():
-    try:
-        return CallbackHandler(
-            public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
-            secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
-            host=os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com"),
-        )
-    except Exception:
+    public_key = os.getenv("LANGFUSE_PUBLIC_KEY")
+    secret_key = os.getenv("LANGFUSE_SECRET_KEY")
+    if not public_key or not secret_key:
         return None
+    try:
+        from langfuse.langchain import CallbackHandler
+    except ImportError:
+        return None
+    return CallbackHandler(
+        public_key=public_key,
+        secret_key=secret_key,
+        host=os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com"),
+    )
+
 
 def format_docs(docs):
     parts = []
@@ -48,34 +52,49 @@ def format_docs(docs):
         parts.append(f"[Source {i+1}: {os.path.basename(source)}, p.{page}]\n{doc.page_content}")
     return "\n\n---\n\n".join(parts)
 
+
 def build_chain():
+    api_key = get_api_key()
+    if not api_key:
+        raise RuntimeError(
+            "GROQ_API_KEY is not configured. Set it via streamlit secrets or the GROQ_API_KEY environment variable."
+        )
     llm = ChatGroq(
         model="llama-3.3-70b-versatile",
         temperature=0.1,
-        api_key=get_api_key(),
+        api_key=api_key,
     )
-    retriever = load_retriever(k=5)
     prompt = ChatPromptTemplate.from_messages([
         ("system", SYSTEM_PROMPT),
         ("human", "{question}"),
     ])
-    chain = (
-        {"context": retriever | format_docs, "question": RunnablePassthrough()}
+    return (
+        {"context": RunnablePassthrough(), "question": RunnablePassthrough()}
         | prompt
         | llm
         | StrOutputParser()
     )
-    return chain, retriever
+
 
 def ask(question: str) -> dict:
-    chain, retriever = build_chain()
+    retriever = load_retriever(k=5)
     docs = retriever.invoke(question)
 
-    # Langfuse observability
+    if not docs:
+        return {
+            "answer": "No relevant documents were found for that question.",
+            "sources": [],
+        }
+
     langfuse_handler = get_langfuse_handler()
     config = {"callbacks": [langfuse_handler]} if langfuse_handler else {}
 
-    answer = chain.invoke(question, config=config)
+    chain = build_chain()
+    answer = chain.invoke(
+        {"context": format_docs(docs), "question": question},
+        config=config,
+    )
+
     sources = [
         {
             "file": os.path.basename(d.metadata.get("source", "unknown")),

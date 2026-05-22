@@ -1,5 +1,3 @@
-import os
-import glob
 from pathlib import Path
 from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
@@ -9,20 +7,21 @@ from langchain_community.vectorstores import Chroma
 
 load_dotenv()
 
-CHROMA_PATH = "chroma_db"
-DATA_PATH = "data/pdfs"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+CHROMA_PATH = PROJECT_ROOT / "chroma_db"
+DATA_PATH = PROJECT_ROOT / "data/pdfs"
 EMBED_MODEL = "all-MiniLM-L6-v2"  # fast, 80MB, good quality
 
 
-def load_pdfs(data_path: str) -> list:
+def load_pdfs(data_path: Path) -> list:
     docs = []
-    pdf_files = glob.glob(os.path.join(data_path, "*.pdf"))
+    pdf_files = sorted(data_path.rglob("*.pdf"))
     if not pdf_files:
         print(f"No PDFs found in {data_path}/")
         return docs
     for pdf_path in pdf_files:
         print(f"Loading: {pdf_path}")
-        loader = PyPDFLoader(pdf_path)
+        loader = PyPDFLoader(str(pdf_path))
         docs.extend(loader.load())
     print(f"Loaded {len(docs)} pages from {len(pdf_files)} PDF(s)")
     return docs
