@@ -65,12 +65,36 @@ streamlit run app.py
 
 ## Project Structure
 
-ClimateQA/ ├── app.py # Streamlit UI ├── src/ │ ├── ingestion/ingest.py # PDF loading, chunking, embedding │ ├── retrieval/retriever.py # ChromaDB MMR retrieval │ └── api/ │ ├── main.py # FastAPI routes │ └── chain.py # RAG chain + Langfuse observability ├── notebooks/ │ ├── evaluate.py # RAGAS evaluation script │ └── ragas_results.csv # Full evaluation results ├── tests/ │ └── test_api.py # Smoke tests (CI/CD) ├── .github/workflows/ci.yml # GitHub Actions CI ├── Dockerfile # Container definition └── data/pdfs/ # Source documents (IPCC AR6)
+ClimateQA/
+├── app.py                  # Streamlit UI
+├── src/
+│   ├── ingestion/ingest.py # PDF loading, chunking, embedding
+│   ├── retrieval/retriever.py # ChromaDB MMR retrieval
+│   └── api/chain.py        # RAG chain (LangChain + Groq)
+├── notebooks/
+│   ├── evaluate.py         # RAGAS evaluation script
+│   └── ragas_results.csv   # Full evaluation output
+└── data/pdfs/              # Source documents
 
-## About
+## Author
 
-Built by **Dzahene Richmond** — Teaching & Research Assistant, Dept. of Meteorology & Climate Science, KNUST, Ghana.
+**Dzahene Richmond Elorm**  
+[github.com/TheBishop](https://github.com/TheBishop)
 
-Meteorologist learning AI engineering in public. Climate × AI is an underexplored space in Africa — this is the first of several projects at that intersection.
 
-[𝕏 @O0hene](https://x.com/O0hene) | [GitHub @TheBishop](https://github.com/TheBishop)
+
+
+
+
+
+
+
+## API
+
+```bash
+curl -X POST https://your-api-url/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What are projected sea level rises by 2100?"}'
+```
+
+Interactive docs available at `/docs` (Swagger UI).
