@@ -21,11 +21,15 @@ Context:
 """
 
 def get_api_key():
+    key = None
     try:
         import streamlit as st
-        return st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
-    except ImportError:
-        return os.getenv("GROQ_API_KEY")
+        key = st.secrets.get("GROQ_API_KEY")
+    except Exception:
+        # Covers ImportError (streamlit not installed) and
+        # StreamlitSecretNotFoundError (no secrets.toml present)
+        key = None
+    return key or os.getenv("GROQ_API_KEY")
 
 
 def get_langfuse_handler():
